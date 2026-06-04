@@ -71,6 +71,41 @@ function makeTraceId(prefix) {
   return `${prefix}-${Date.now()}-${rand}`;
 }
 
+function getScoringPostUrl() {
+  return `${BACKEND_BASE_URL}${BACKEND_SCORING_PATH}`;
+}
+
+/**
+ * Log request/response scoring ke console (demo / API dummy).
+ * @param {{
+ *  mode: 'mock' | 'uat';
+ *  url: string;
+ *  payload: object;
+ *  response?: object;
+ *  error?: unknown;
+ * }} ctx
+ */
+function logDummyApiDebug(ctx) {
+  if (!import.meta.env.DEV) return;
+
+  const title =
+    ctx.mode === 'mock'
+      ? '[Credit Scoring — API Dummy] POST simulasi'
+      : '[Credit Scoring — UAT Backend] POST';
+  console.groupCollapsed(title);
+  console.log('URL:', ctx.url);
+  console.log('Method: POST');
+  console.log('Headers:', { 'Content-Type': 'application/json', Accept: 'application/json' });
+  console.log('Request body:', ctx.payload);
+  if (ctx.response !== undefined) {
+    console.log('Response:', ctx.response);
+  }
+  if (ctx.error !== undefined) {
+    console.error('Error:', ctx.error);
+  }
+  console.groupEnd();
+}
+
 /**
  * @param {number} kol
  * @returns {string}
@@ -132,37 +167,52 @@ export async function scoreCreditApplication(input) {
  */
 async function callUatBackend(input) {
   const payload = buildScoringRequestBody(input);
-  const url = `${BACKEND_BASE_URL}${BACKEND_SCORING_PATH}`;
+  const url = getScoringPostUrl();
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Backend scoring gagal (${res.status}): ${text || res.statusText}`);
+    if (!res.ok) {
+      const text = await res.text();
+      const err = new Error(`Backend scoring gagal (${res.status}): ${text || res.statusText}`);
+      logDummyApiDebug({ mode: 'uat', url, payload, error: err.message });
+      throw err;
+    }
+
+    const json = await res.json();
+    logDummyApiDebug({ mode: 'uat', url, payload, response: json });
+    const normalized = normalizeScoringResponse(json);
+
+    return {
+      kolektibilitas: normalized.kolektibilitas,
+      kolektibilitasLabel: normalized.kolektibilitasLabel,
+      internalScore: normalized.internalScore,
+      breakdown: normalized.breakdown,
+      recommendation:
+        normalized.recommendation || 'Tidak ada rekomendasi dari backend.',
+      source: 'uat-backend',
+      traceId: normalized.traceId || makeTraceId('uat'),
+      evaluatedAt: normalized.evaluatedAt || new Date().toISOString(),
+      aegira: normalized.aegira,
+    };
+  } catch (error) {
+    if (!(error instanceof Error && error.message.startsWith('Backend scoring gagal'))) {
+      logDummyApiDebug({
+        mode: 'uat',
+        url,
+        payload,
+        error: error instanceof Error ? error.message : error,
+      });
+    }
+    throw error;
   }
-
-  const json = await res.json();
-  const normalized = normalizeScoringResponse(json);
-
-  return {
-    kolektibilitas: normalized.kolektibilitas,
-    kolektibilitasLabel: normalized.kolektibilitasLabel,
-    internalScore: normalized.internalScore,
-    breakdown: normalized.breakdown,
-    recommendation:
-      normalized.recommendation || 'Tidak ada rekomendasi dari backend.',
-    source: 'uat-backend',
-    traceId: normalized.traceId || makeTraceId('uat'),
-    evaluatedAt: normalized.evaluatedAt || new Date().toISOString(),
-    aegira: normalized.aegira,
-  };
 }
 
 /**
@@ -171,6 +221,9 @@ async function callUatBackend(input) {
  * @returns {Promise<CreditScoringResponse>}
  */
 async function scoreWithMock(input) {
+  const payload = buildScoringRequestBody(input);
+  const url = getScoringPostUrl();
+
   const income = Math.max(0, Number(input.monthlyIncome) || 0);
   const debt = Math.max(0, Number(input.monthlyDebt) || 0);
   const dti = income > 0 ? debt / income : 1;
@@ -234,7 +287,10 @@ async function scoreWithMock(input) {
     debt,
   });
 
-  return {
+  const traceId = makeTraceId('mock');
+  const evaluatedAt = new Date().toISOString();
+
+  const result = {
     kolektibilitas,
     kolektibilitasLabel,
     internalScore,
@@ -246,8 +302,43 @@ async function scoreWithMock(input) {
     },
     recommendation,
     source: 'mock',
-    traceId: makeTraceId('mock'),
-    evaluatedAt: new Date().toISOString(),
+    traceId,
+    evaluatedAt,
     aegira,
   };
+
+  logDummyApiDebug({
+    mode: 'mock',
+    url,
+    payload,
+    response: {
+      trace_id: traceId,
+      evaluated_at: evaluatedAt,
+      calculation: aegira
+        ? {
+            current_dsr: aegira.currentDsr,
+            projected_dsr: aegira.projectedDsr,
+            monthly_installment: aegira.monthlyInstallment,
+          }
+        : undefined,
+      eligibility: aegira
+        ? { risk_level: aegira.riskLevel, eligible: aegira.eligible }
+        : undefined,
+      result: {
+        kolektibilitas: result.kolektibilitas,
+        kolektibilitas_label: result.kolektibilitasLabel,
+        internal_score: result.internalScore,
+        breakdown: {
+          payment_history: result.breakdown.paymentHistory,
+          income: result.breakdown.income,
+          debt_to_income: result.breakdown.debtToIncome,
+          dti_ratio: result.breakdown.dtiRatio,
+        },
+        recommendation: result.recommendation,
+      },
+      _uiNormalized: result,
+    },
+  });
+
+  return result;
 }
