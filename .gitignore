@@ -5,5 +5,6 @@ dist
 test-results
 playwright-report
 
-# Facilitator-only — do not commit (keep local or distribute separately)
+# Facilitator-only — do not commit
+docs/workshop/workbook-fasilitator.md
 docs/workshop/answer-key.md

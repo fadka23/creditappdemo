@@ -8,8 +8,9 @@ Materi praktik untuk workshop **Frontend–Backend Integration & Debugging Maste
 |------|-------------|-----|
 | [`playwright-intro.md`](./playwright-intro.md) | Peserta | **Mulai di sini** — 3 latihan Playwright dasar sebelum use case nyata |
 | [`frontend-backend-integration-practice.md`](./frontend-backend-integration-practice.md) | Peserta | Lab, quiz, dan skenario debugging langkah demi langkah |
+| [`workbook.md.example`](./workbook.md.example) | Peserta | **Satu workbook** — salin, isi jawaban, commit di branch PR |
 
-**Fasilitator:** kunci jawaban ada di `answer-key.md` — file **tidak** di-commit ke repo (lihat bagian Fasilitator di bawah).
+**Fasilitator:** [`workbook-fasilitator.md`](./workbook-fasilitator.md) — struktur sama + kunci jawaban (lokal, **tidak** di-commit). Bagikan ke co-fasilitator lewat channel internal.
 
 ## Prasyarat peserta
 
@@ -61,15 +62,57 @@ npm run test:e2e:trace    # dengan trace untuk debugging
 | 3 | Cross-Layer Debugging (Correlation ID & Logs) | Lab 3.1 – 3.3 |
 | 4 | Systematic Debugging + Pipeline | Lab 4.1 – 4.2 + case study |
 
-## Fasilitator — kunci jawaban (tidak di repo)
+## Pengumpulan jawaban — branch & PR (peserta)
 
-File `docs/workshop/answer-key.md` ada di `.gitignore` agar tidak ikut ter-push ke peserta.
+Satu branch per nama → PR ke `main`. Workbook + tes Playwright dalam satu PR.
+
+### Alur
 
 ```bash
-# Salin template lalu isi dari materi internal fasilitator
-cp docs/workshop/answer-key.md.example docs/workshop/answer-key.md
+git checkout main && git pull
+git checkout -b workshop/nama-anda
+cp docs/workshop/workbook.md.example docs/workshop/workbook-nama-anda.md
 ```
 
-Distribusikan `answer-key.md` lewat channel internal (Drive, wiki tim, dll.), bukan lewat git publik.
+Kerjakan latihan per sesi, commit bertahap:
 
-> **Catatan:** Jika file pernah ter-push sebelumnya, commit berikutnya akan menghapusnya dari repo, tetapi riwayat git lama mungkin masih menyimpan isinya. Untuk konten sangat sensitif, pertimbangkan rotasi jawaban atau purge history.
+```bash
+git add tests/workshop/ docs/workshop/workbook-nama-anda.md
+git commit -m "workshop sesi 2: playwright intro + env config test"
+git push -u origin workshop/nama-anda
+```
+
+### Apa yang masuk PR
+
+| Masuk PR | Tidak masuk PR |
+|----------|----------------|
+| `docs/workshop/workbook-<nama>.md` | `workbook-fasilitator.md` |
+| Tes Playwright (`tests/workshop/intro/`, `02`, `03`) | `.env` |
+| Screenshot bukti (opsional) | `test-results`, `playwright-report` |
+
+### Template deskripsi PR
+
+```markdown
+## Peserta
+Nama: ...
+Sesi selesai: [ ] 1 [ ] 2 [ ] 3 [ ] 4
+
+## Playwright
+- [ ] `npm run test:e2e:intro` — X passed, Y skipped
+- [ ] `npm run test:e2e` — (jika sudah Lab 2.3 / 4.2)
+
+## Workbook
+Lihat `docs/workshop/workbook-<nama>.md`
+```
+
+### Aturan
+
+- Satu branch per peserta; **jangan** push ke `main`
+- PR boleh **draft** selama workshop; **Ready for review** di akhir hari
+- Fasilitator review + comment; merge opsional
+
+## Fasilitator
+
+`workbook-fasilitator.md` ada di mesin fasilitator (di-ignore git). Isinya kunci jawaban untuk debrief — **jangan** push ke repo publik.
+
+Distribusikan ke co-fasilitator lewat Drive/wiki internal. Peserta hanya mendapat `workbook.md.example`.
