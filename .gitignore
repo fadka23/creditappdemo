@@ -4,3 +4,6 @@ dist
 *.local
 test-results
 playwright-report
+
+# Facilitator-only — do not commit (keep local or distribute separately)
+docs/workshop/answer-key.md

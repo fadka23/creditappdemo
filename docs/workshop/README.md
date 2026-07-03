@@ -8,7 +8,8 @@ Materi praktik untuk workshop **Frontend–Backend Integration & Debugging Maste
 |------|-------------|-----|
 | [`playwright-intro.md`](./playwright-intro.md) | Peserta | **Mulai di sini** — 3 latihan Playwright dasar sebelum use case nyata |
 | [`frontend-backend-integration-practice.md`](./frontend-backend-integration-practice.md) | Peserta | Lab, quiz, dan skenario debugging langkah demi langkah |
-| [`answer-key.md`](./answer-key.md) | Fasilitator | Kunci jawaban & petunjuk debrief |
+
+**Fasilitator:** kunci jawaban ada di `answer-key.md` — file **tidak** di-commit ke repo (lihat bagian Fasilitator di bawah).
 
 ## Prasyarat peserta
 
@@ -53,3 +54,16 @@ npm run test:e2e:trace    # dengan trace untuk debugging
 | 2 | CORS, Env Config, Reverse Proxy | Lab 2.1 – 2.4 + Playwright config tests |
 | 3 | Cross-Layer Debugging (Correlation ID & Logs) | Lab 3.1 – 3.3 |
 | 4 | Systematic Debugging + Pipeline | Lab 4.1 – 4.2 + case study |
+
+## Fasilitator — kunci jawaban (tidak di repo)
+
+File `docs/workshop/answer-key.md` ada di `.gitignore` agar tidak ikut ter-push ke peserta.
+
+```bash
+# Salin template lalu isi dari materi internal fasilitator
+cp docs/workshop/answer-key.md.example docs/workshop/answer-key.md
+```
+
+Distribusikan `answer-key.md` lewat channel internal (Drive, wiki tim, dll.), bukan lewat git publik.
+
+> **Catatan:** Jika file pernah ter-push sebelumnya, commit berikutnya akan menghapusnya dari repo, tetapi riwayat git lama mungkin masih menyimpan isinya. Untuk konten sangat sensitif, pertimbangkan rotasi jawaban atau purge history.
