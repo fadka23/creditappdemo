@@ -25,9 +25,12 @@ Setelah menyelesaikan latihan ini, peserta dapat:
 git clone <url-repo-creditappdemo>
 cd creditappdemo
 npm install
+npx playwright install chromium   # wajib untuk lab Playwright (Sesi 2 & 4)
 cp .env.example .env
 npm run dev
 ```
+
+> `npm install` **tidak** mengunduh browser Playwright. Tanpa `npx playwright install chromium`, tes E2E gagal di `browserType.launch`.
 
 | Variabel env | Default | Fungsi |
 |--------------|---------|--------|
@@ -190,7 +193,7 @@ Gunakan skenario **2.1.C** (wrong API URL). Isi checklist secara berurutan:
 Tes use case nyata sudah disiapkan di `tests/workshop/`. Jalankan:
 
 ```bash
-npx playwright install chromium   # sekali saja
+npx playwright install chromium   # sekali saja — wajib jika belum pernah di mesin ini
 npm run test:e2e
 ```
 

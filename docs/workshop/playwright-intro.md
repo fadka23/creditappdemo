@@ -1,9 +1,18 @@
 # Playwright Intro — Latihan Dasar (sebelum use case nyata)
 
 **Durasi estimasi:** 45–60 menit  
-**Prasyarat:** `npm install`, `npx playwright install chromium`, `npm run dev` (atau biarkan Playwright menjalankan dev server otomatis)
+**Prasyarat:** lihat [Persiapan cepat](#persiapan-cepat) di bawah — **`npx playwright install chromium` wajib** (bukan otomatis dari `npm install`).
 
 Latihan ini memperkenalkan Playwright dengan aplikasi **CreditApp Demo** yang sama, tetapi fokus pada konsep dasar sebelum Anda mengerjakan skenario integrasi di `tests/workshop/01–03`.
+
+> **Penting — baca dulu**  
+> `npm install` hanya memasang package `@playwright/test`. **Browser Chromium tidak ikut ter-download.**  
+> Tanpa langkah install, semua tes gagal dengan error:
+> `browserType.launch: Executable doesn't exist at .../chrome-headless-shell`
+>
+> ```bash
+> npx playwright install chromium   # sekali per mesin, setelah npm install
+> ```
 
 ---
 
@@ -24,14 +33,22 @@ Setelah ketiga latihan ini, lanjut ke **use case nyata**: happy path (`01-happy-
 ```bash
 cd creditappdemo
 npm install
-npx playwright install chromium
+npx playwright install chromium   # WAJIB — sekali per mesin (lihat catatan di atas)
+# atau: npm run setup:e2e
+cp .env.example .env              # opsional untuk lab manual
 ```
 
-Jalankan hanya latihan intro:
+Verifikasi browser sudah terpasang:
 
 ```bash
+npx playwright --version
+# lalu jalankan intro:
 npm run test:e2e:intro
 ```
+
+Harapan: **4 passed, 3 skipped** (3 skipped = latihan TODO peserta).
+
+Dev server: Playwright menjalankan `npm run dev` otomatis via `playwright.config.js`. Untuk eksplorasi manual, jalankan `npm run dev` di terminal terpisah.
 
 Mode UI (disarankan saat belajar):
 
@@ -164,9 +181,11 @@ test('judul skenario', async ({ page }) => {
 
 | Gejala | Kemungkinan penyebab | Solusi |
 |--------|----------------------|--------|
+| `Executable doesn't exist at .../chrome-headless-shell` | Browser Playwright belum di-install | `npx playwright install chromium` |
 | `ECONNREFUSED localhost:5173` | Dev server belum jalan | Biarkan `webServer` di config, atau `npm run dev` |
 | Tes timeout | Assertion terlalu cepat | Tambah `{ timeout: 10_000 }` pada `expect` |
 | Elemen tidak ditemukan | Salah label/role | Inspect di browser → cek teks tombol & label |
+| `Process from config.webServer exited early` | Tes dibatalkan (`Ctrl+C`) atau port 5173 bentrok | Ulangi tes; hentikan `npm run dev` lain di port yang sama |
 
 ---
 

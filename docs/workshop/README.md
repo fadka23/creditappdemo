@@ -16,17 +16,23 @@ Materi praktik untuk workshop **Frontend–Backend Integration & Debugging Maste
 ```bash
 cd creditappdemo
 npm install
+npx playwright install chromium   # WAJIB untuk tes E2E (tidak otomatis dari npm install)
+cp .env.example .env
 npm run dev
 ```
 
 Buka http://localhost:5173 — alur demo: **Formulir → Verifikasi dokumen → Scoring → Hasil**.
+
+> **Tes Playwright gagal dengan `Executable doesn't exist`?**  
+> Jalankan `npx playwright install chromium` sekali per mesin, lalu ulangi `npm run test:e2e:intro`.
 
 ## Tes otomatis
 
 ### Intro Playwright (45–60 menit, sebelum lab integrasi)
 
 ```bash
-npm run test:e2e:intro    # hanya latihan dasar di tests/workshop/intro/
+npx playwright install chromium   # wajib sekali, sebelum tes pertama
+npm run test:e2e:intro            # harapan: 4 passed, 3 skipped
 ```
 
 Panduan: [`playwright-intro.md`](./playwright-intro.md).
